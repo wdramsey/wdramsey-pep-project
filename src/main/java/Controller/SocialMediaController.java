@@ -3,6 +3,8 @@ package Controller;
 import io.javalin.Javalin;
 import io.javalin.http.Context;
 
+import java.net.SocketAddress;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -58,35 +60,27 @@ public class SocialMediaController {
 
         // send results to client
         if (newAccount != null) {
-            Account expectedAccount = new Account(2, "user123", "pass123");
-            // System.out.println(mapper.readValue(context.body().toString(), Account.class));
             context.json(newAccount);
-            System.out.println((newAccount.equals(expectedAccount)));
         } else {
             context.status(400);
         }
     }
     private void postLoginHandler(Context context) throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
-        Account account = mapper.readValue(context.body().toString(), Account.class);
+        Account account = mapper.readValue(context.body(), Account.class);
         Account loginAccount = socialMediaService.login(account);
-        System.out.println("here, login " + account);
         if (loginAccount != null) {
-            context.json(mapper.writeValueAsString(loginAccount));
+            context.json(loginAccount);
         } else {
             context.status(401);
         }
     }
     private void postMessageHandler(Context context) throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
-        Message message = mapper.readValue(context.body().toString(), Message.class);
-        // int posted_by = Integer.parseInt(context.pathParam("posted_by"));
-        // String message_text = context.pathParam("message_text");
-        // String time_posted_epoch = context.pathParam("time_posted_epoch");
+        Message message = mapper.readValue(context.body(), Message.class);
         Message postedMessage = socialMediaService.addMessage(message);
-
         if (postedMessage != null) {
-            context.json(mapper.writeValueAsString(postedMessage));
+            context.json(postedMessage);
         } else {
             context.status(400);
         }
@@ -95,16 +89,32 @@ public class SocialMediaController {
         context.json(socialMediaService.getAllMessages());
     }
     private void getMessageByIdHandler(Context context) {
-
+        int id = Integer.parseInt(context.pathParam("message_id"));
+        Message message = socialMediaService.getMessageById(id);
+        if (message != null) {
+            context.json(message);
+        } else context.json("");
     }
     private void deleteMessageByIdHandler(Context context) {
-
+        int id = Integer.parseInt(context.pathParam("message_id"));
+        Message message = socialMediaService.getMessageById(id);
+        if (message != null) {
+            socialMediaService.deleteMessageById(message);
+            context.json(message);
+        } else context.json("");
     }
     private void updateMessageByIdHandler(Context context) throws JsonProcessingException {
-
+        ObjectMapper mapper = new ObjectMapper();
+        Message message = mapper.readValue(context.body(), Message.class);
+        int id = Integer.parseInt(context.pathParam("message_id"));
+        Message updatedMessage = socialMediaService.updateMessageById(message, id);
+        if (updatedMessage != null) {
+            context.json(updatedMessage);
+        } else context.status(400);
     }
     private void getAllMessagesByIdHandler(Context context) {
-
+        int id = Integer.parseInt(context.pathParam("account_id"));
+        context.json(socialMediaService.getAllMessagesByUserId(id));
     }
 
 

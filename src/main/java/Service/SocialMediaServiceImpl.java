@@ -31,7 +31,7 @@ public class SocialMediaServiceImpl implements SocialMediaService {
     @Override
     public Account registerNewAccount(Account account) {
         //check if username already exists, password is 4 characters long, and username is not blank
-        if (socialMediaDAO.checkUserNameExists(account) || account.getUsername() == null || account.getPassword().length() < 4) {
+        if (socialMediaDAO.checkUserNameExists(account) || account.getUsername() == "" || account.getPassword().length() < 4) {
             return null;
         } else return socialMediaDAO.registerNewAccount(account);
     }
@@ -44,7 +44,7 @@ public class SocialMediaServiceImpl implements SocialMediaService {
     @Override
     public Message addMessage(Message message) {
         //check if message is not blank, less than 255 characters, and is posted by a registered user
-        if (message.getMessage_text().length() > 255 || message.getMessage_text().length() == 0 || socialMediaDAO.checkAccountExists(message)) {
+        if (message.getMessage_text().length() > 254 || message.getMessage_text() == "" || !socialMediaDAO.checkAccountExists(message)) {
             return null;
         } else return socialMediaDAO.addMessage(message);
     }
@@ -56,26 +56,24 @@ public class SocialMediaServiceImpl implements SocialMediaService {
 
     @Override
     public Message getMessageById(int id) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getMessageById'");
+        return socialMediaDAO.getMessageById(id);
     }
 
     @Override
-    public void deleteMessageById(int id) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'deleteMessageById'");
+    public void deleteMessageById(Message message) {
+        socialMediaDAO.deleteMessageById(message);
     }
 
     @Override
-    public Message updateMessageById(Message message) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'updateMessageById'");
+    public Message updateMessageById(Message message, int id) {
+       if (message.getMessage_text().length() > 254 || message.getMessage_text() == "") {
+            return null;
+       } else return socialMediaDAO.updateMessageById(message, id);
     }
 
     @Override
-    public Message getAllMessagesByUserId(int id) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getAllMessagesByUserId'");
+    public ArrayList<Message> getAllMessagesByUserId(int id) {
+        return socialMediaDAO.getAllMessagesByUserId(id);
     }
     
 }

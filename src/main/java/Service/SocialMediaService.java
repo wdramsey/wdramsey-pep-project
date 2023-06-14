@@ -29,11 +29,11 @@ public interface SocialMediaService {
      public abstract Message getMessageById(int id);
  
      //delete message by message id
-     public abstract void deleteMessageById(int id);
+     public abstract void deleteMessageById(Message message);
  
      //update message by message id 
-     public abstract Message updateMessageById(Message message);
+     public abstract Message updateMessageById(Message message, int id);
      
      //get all messages by user account id
-     public abstract Message getAllMessagesByUserId(int id);
+     public abstract ArrayList<Message> getAllMessagesByUserId(int id);
 }

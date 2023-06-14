@@ -136,7 +136,6 @@ public class SocialMediaDAOImpl implements SocialMediaDAO {
             statement.setLong(3, message.getTime_posted_epoch());
 
             statement.executeUpdate();
-
             ResultSet keys = statement.getGeneratedKeys();
             if (keys.next()) {
                 // getInt(1) gets the first int
@@ -159,12 +158,12 @@ public class SocialMediaDAOImpl implements SocialMediaDAO {
              // execute query
              ResultSet rs = statement.executeQuery();
              while(rs.next()) {
-                int id = rs.getInt("message_id");
+                int message_id = rs.getInt("message_id");
                 int posted_by = rs.getInt("posted_by");
                 String message_text = rs.getString("message_text");
-                long time_posted = rs.getLong("time_posted_epoch");//may have a problem here with the biginteger type in sql table
+                long time_posted = rs.getLong("time_posted_epoch");
 
-                messages.add(new Message(id, posted_by, message_text, time_posted));
+                messages.add(new Message(message_id, posted_by, message_text, time_posted));
              }
 
         } catch (SQLException ex) {
@@ -175,25 +174,80 @@ public class SocialMediaDAOImpl implements SocialMediaDAO {
    
     @Override
     public Message getMessageById(int id) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getMessageById'");
+        Connection connection = ConnectionUtil.getConnection();
+        try {
+            String sql = "SELECT * FROM message WHERE message_id = ?";
+            PreparedStatement statement = connection.prepareStatement(sql);
+            statement.setInt(1, id);
+            ResultSet rs = statement.executeQuery();
+            while (rs.next()) {
+                int message_id = rs.getInt("message_id");
+                int posted_by = rs.getInt("posted_by");
+                String message_text = rs.getString("message_text");
+                long time_posted = rs.getLong("time_posted_epoch");
+
+                return new Message(message_id, posted_by, message_text, time_posted);
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+        return null;
     }
 
     @Override
-    public void deleteMessageById(int id) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'deleteMessageById'");
+    public void deleteMessageById(Message message) {
+        Connection connection = ConnectionUtil.getConnection();
+        try {
+            String sql = "DELETE FROM message WHERE message_id = ?";
+            PreparedStatement statement = connection.prepareStatement(sql);
+            statement.setInt(1, message.getMessage_id());
+            statement.executeUpdate();
+        } catch (SQLException exception) {
+            exception.printStackTrace();
+        }
     }
 
     @Override
-    public Message updateMessageById(Message message) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'updateMessageById'");
+    public Message updateMessageById(Message message, int id) {
+        Connection connection = ConnectionUtil.getConnection();
+        try {
+            String sql = "UPDATE message SET message_text = ? WHERE message_id = ?";
+            PreparedStatement statement = connection.prepareStatement(sql);
+            statement.setString(1, message.getMessage_text());
+            statement.setInt(2, id);
+            statement.executeUpdate();
+
+            return getMessageById(id);
+
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+        return null;
     }
 
     @Override
-    public Message getAllMessagesByUserId(int id) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getAllMessagesByUserId'");
+    public ArrayList<Message> getAllMessagesByUserId(int id) {
+        Connection connection = ConnectionUtil.getConnection();
+        ArrayList<Message> messages = new ArrayList<>();
+        try {
+             //create a statement
+             String sql = "SELECT * FROM message WHERE posted_by = ?";
+             PreparedStatement statement = connection.prepareStatement(sql);
+            statement.setInt(1, id);
+             // execute query
+             ResultSet rs = statement.executeQuery();
+             while(rs.next()) {
+                int message_id = rs.getInt("message_id");
+                int posted_by = rs.getInt("posted_by");
+                String message_text = rs.getString("message_text");
+                long time_posted = rs.getLong("time_posted_epoch");
+
+                messages.add(new Message(message_id, posted_by, message_text, time_posted));
+             }
+
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+        return messages;
     }
 }
