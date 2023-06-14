@@ -29,7 +29,6 @@ public class SocialMediaController {
     }
     public Javalin startAPI() {
         Javalin app = Javalin.create();
-        app.start(8080);
         app.post("/register", this::postRegisterHandler);
         app.post("/login", this::postLoginHandler);
         app.post("/messages", this::postMessageHandler);
@@ -38,6 +37,7 @@ public class SocialMediaController {
         app.delete("/messages/{message_id}", this::deleteMessageByIdHandler);
         app.patch("/messages/{message_id}", this::updateMessageByIdHandler);
         app.get("/accounts/{account_id}/messages", this::getAllMessagesByIdHandler);
+        app.get("/users", this::getUsers);
         return app;
     }
 
@@ -46,28 +46,31 @@ public class SocialMediaController {
      * @param context The Javalin Context object manages information about both the HTTP request and response.
      */
     
+    private void getUsers(Context context) throws JsonProcessingException {
+        context.json(socialMediaService.getUsers());
+    }
     private void postRegisterHandler(Context context) throws JsonProcessingException {
         //get request information as needed
         ObjectMapper mapper = new ObjectMapper();
         Account account = mapper.readValue(context.body(), Account.class);
-    
         //call service method
         Account newAccount = socialMediaService.registerNewAccount(account);
 
         // send results to client
         if (newAccount != null) {
-            context.json(mapper.writeValueAsString(newAccount));
-            //context.status(200); not needed?
+            Account expectedAccount = new Account(2, "user123", "pass123");
+            // System.out.println(mapper.readValue(context.body().toString(), Account.class));
+            context.json(newAccount);
+            System.out.println((newAccount.equals(expectedAccount)));
         } else {
             context.status(400);
         }
     }
     private void postLoginHandler(Context context) throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
-        String username = context.pathParam("username");
-        String password = context.pathParam("password");
-        Account loginAccount = socialMediaService.login(username, password);
-
+        Account account = mapper.readValue(context.body().toString(), Account.class);
+        Account loginAccount = socialMediaService.login(account);
+        System.out.println("here, login " + account);
         if (loginAccount != null) {
             context.json(mapper.writeValueAsString(loginAccount));
         } else {
@@ -76,7 +79,7 @@ public class SocialMediaController {
     }
     private void postMessageHandler(Context context) throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
-        Message message = mapper.readValue(context.body(), Message.class);
+        Message message = mapper.readValue(context.body().toString(), Message.class);
         // int posted_by = Integer.parseInt(context.pathParam("posted_by"));
         // String message_text = context.pathParam("message_text");
         // String time_posted_epoch = context.pathParam("time_posted_epoch");

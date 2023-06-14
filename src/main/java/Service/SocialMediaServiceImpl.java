@@ -16,6 +16,10 @@ public class SocialMediaServiceImpl implements SocialMediaService {
     }
 
     @Override 
+    public ArrayList<Account> getUsers() {
+        return socialMediaDAO.getUsers();
+    }
+    @Override 
     public Boolean checkAccountExists(Message message) {
         return socialMediaDAO.checkAccountExists(message);
     }
@@ -33,8 +37,8 @@ public class SocialMediaServiceImpl implements SocialMediaService {
     }
 
     @Override
-    public Account login(String username_entry, String password_entry) {
-        return socialMediaDAO.login(username_entry, password_entry);
+    public Account login(Account account) {
+        return socialMediaDAO.login(account);
     }
 
     @Override

@@ -5,6 +5,8 @@ import Model.Message;
 import Model.Account;
 
 public interface SocialMediaService {
+     public abstract ArrayList<Account> getUsers();
+
      //check if username exists
      public abstract Boolean checkUserNameExists(Account account);
 
@@ -15,7 +17,7 @@ public interface SocialMediaService {
      public abstract Account registerNewAccount(Account account);
 
      //login
-     public abstract Account login(String username_entry, String password_entry);
+     public abstract Account login(Account account);
  
      //Create New message
      public abstract Message addMessage(Message message);

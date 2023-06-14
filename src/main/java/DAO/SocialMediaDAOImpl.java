@@ -20,13 +20,39 @@ public class SocialMediaDAOImpl implements SocialMediaDAO {
         // 5. close connection
 
     @Override
+    public ArrayList<Account> getUsers() {
+        Connection connection = ConnectionUtil.getConnection();
+        ArrayList<Account> accounts = new ArrayList<>();
+        try {
+             //create a statement
+             String sql = "SELECT * FROM account";
+             PreparedStatement statement = connection.prepareStatement(sql);
+ 
+             // execute query
+             ResultSet rs = statement.executeQuery();
+             
+             while(rs.next()) {
+                int account_id = rs.getInt("account_id");
+                String username = rs.getString("username");
+                String password = rs.getString("password");
+
+                accounts.add(new Account(account_id, username, password));
+             }
+
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+        return accounts;
+    }
+    @Override
     public Boolean checkUserNameExists(Account account) {
-        try (Connection connection = ConnectionUtil.getConnection()) {
+        Connection connection = ConnectionUtil.getConnection();
+        try {
             String sql = "SELECT * FROM account WHERE username = ?";
             PreparedStatement statement = connection.prepareStatement(sql);
 
             statement.setString(1, account.getUsername());
-            ResultSet rs = statement.executeQuery(sql);
+            ResultSet rs = statement.executeQuery(); 
             if (rs.next()) {
                 return true;
             }
@@ -38,12 +64,13 @@ public class SocialMediaDAOImpl implements SocialMediaDAO {
 
     @Override
     public Boolean checkAccountExists(Message message) {
-        try (Connection connection = ConnectionUtil.getConnection()) {
+        Connection connection = ConnectionUtil.getConnection();
+        try {
             String sql = "SELECT * FROM account WHERE account_id = ?";
             PreparedStatement statement = connection.prepareStatement(sql);
 
             statement.setInt(1, message.getPosted_by());
-            ResultSet rs = statement.executeQuery(sql);
+            ResultSet rs = statement.executeQuery();
             if (rs.next()) {
                 return true;
             }
@@ -55,12 +82,13 @@ public class SocialMediaDAOImpl implements SocialMediaDAO {
 
     @Override
     public Account registerNewAccount(Account account) {
-        try (Connection connection = ConnectionUtil.getConnection()) {
-            String sql = "INSERT INTO account (account, password) VALUES (?, ?)";
+        Connection connection = ConnectionUtil.getConnection();
+        try {
+            String sql = "INSERT INTO account (username, password) VALUES (?, ?)";
             PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
 
             statement.setString(1, account.getUsername() );
-            statement.setString(2, account.getUsername());
+            statement.setString(2, account.getPassword());
 
             statement.executeUpdate();
              // process results
@@ -78,15 +106,15 @@ public class SocialMediaDAOImpl implements SocialMediaDAO {
     }
 
     @Override
-    public Account login(String username_entry, String password_entry) {
-        try (Connection connection = ConnectionUtil.getConnection()) {
+    public Account login(Account account) {
+        Connection connection = ConnectionUtil.getConnection();
+        try {
             String sql = "SELECT * FROM account WHERE username = ? AND password = ?";
             PreparedStatement statement = connection.prepareStatement(sql);
 
-            statement.setString(1, username_entry);
-            statement.setString(2, password_entry);
-            ResultSet rs = statement.executeQuery(sql);
-
+            statement.setString(1, account.getUsername()); 
+            statement.setString(2, account.getPassword());
+            ResultSet rs = statement.executeQuery();
             if (rs.next()) {
                  return new Account(rs.getInt(1), rs.getString("username"), rs.getString("password"));
              }
@@ -98,7 +126,8 @@ public class SocialMediaDAOImpl implements SocialMediaDAO {
 
     @Override
     public Message addMessage(Message message) {
-        try (Connection connection = ConnectionUtil.getConnection()) {
+        Connection connection = ConnectionUtil.getConnection();
+        try {
             String sql = "INSERT INTO message (posted_by, message_text, time_posted_epoch) VALUES (?, ?, ?)";
             PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
 
@@ -120,9 +149,9 @@ public class SocialMediaDAOImpl implements SocialMediaDAO {
     }
     @Override
     public ArrayList<Message> getAllMessages() {
+        Connection connection = ConnectionUtil.getConnection();
         ArrayList<Message> messages = new ArrayList<>();
-        try (Connection connection = ConnectionUtil.getConnection()) {
-            
+        try {
              //create a statement
              String sql = "SELECT * FROM message";
              PreparedStatement statement = connection.prepareStatement(sql);
